@@ -13,4 +13,4 @@ To bulid these are the requirements:
 3. imgui SFML
 4. sol2
 
-After buliding make sure you clone songs, font, and assets to the bulid location.
+After buliding make sure you clone songs, font, assets, and etc to the bulid location.
