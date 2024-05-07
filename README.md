@@ -1,9 +1,9 @@
 # Project_Rhythm
 
 ## TODO list:
-- [] Lua api
+- [ ] Lua api
 - [x] basic json loader for charting
-- [] Linux and macOS support
+- [ ] Linux and macOS support
 
 
 ## Buliding
