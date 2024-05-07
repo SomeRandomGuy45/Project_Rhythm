@@ -44,6 +44,7 @@ int main(int argc, char* argv[])
 	height = sf::VideoMode::getDesktopMode().height;
 	width = sf::VideoMode::getDesktopMode().width;
 	sf::RenderWindow window(sf::VideoMode(width, height), "Project Rhythm", sf::Style::Fullscreen);
+	ImGui::SFML::Init(window);
 	sf::Font font;
 	if (!font.loadFromFile(BasePath + "/font/Arial.ttf"))
 	{
@@ -98,11 +99,13 @@ int main(int argc, char* argv[])
 	//std::cout << BasePath + "/songs/test.json" << "\n";
 	LoadChart("/songs/test.json", window);
 	window.display();
+	sf::Clock deltaClock;
 	while (window.isOpen())
 	{
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
+			ImGui::SFML::ProcessEvent(window, event);
 			switch (event.type)
 			{
 			case sf::Event::Closed:
@@ -125,7 +128,13 @@ int main(int argc, char* argv[])
 			}
 		}
 		Update();
+		ImGui::SFML::Update(window, deltaClock.restart());
+		//ImGui::ShowDemoWindow();
+		//ImGui::Begin("Hello, world!");
+		//ImGui::Button("Look at this pretty button");
+		//ImGui::End();
 		window.clear(sf::Color::White);
+		//ImGui::SFML::Render(window);
 		button.draw(window);
 		window.draw(Arrows["Left_NotActive"]);
 		window.draw(Arrows["Down_NotActive"]);

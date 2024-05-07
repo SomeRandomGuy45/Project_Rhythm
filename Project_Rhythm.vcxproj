@@ -132,7 +132,6 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Chart.h" />
     <ClInclude Include="Enums.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="Utilities.h" />

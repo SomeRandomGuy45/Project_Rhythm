@@ -1,3 +1,7 @@
+/*
+Main handler of the game!!!
+*/
+
 #include <iostream>
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
@@ -12,7 +16,7 @@
 #include <vector>
 #include <utility> 
 #include <future>
-#include <stdio.h>
+#include <stdio.h>	
 #include <time.h>
 #include "imgui.h"
 #include "imgui-SFML.h"
@@ -132,7 +136,7 @@ struct ChartData
 {
 	struct Song
 	{
-		std::string bpm;
+		int bpm;
 		std::vector<struct Section> notes;
 	} song;
 };
@@ -466,6 +470,7 @@ void RunChart(ChartData chartData, sf::RenderWindow& window)
 
 void LoadChart(std::string Path, sf::RenderWindow& window) //initchart!
 {
+	//took to long to fucking write LOL
 	std::cout << BasePath + Path << "\n";
 	ChartData chartData;
 	std::fstream Song(BasePath + Path);
@@ -477,18 +482,16 @@ void LoadChart(std::string Path, sf::RenderWindow& window) //initchart!
 	std::cout << "[INFO] Opened json\n";
 	json Song_Data = json::parse(Song);
 	std::cout << "[INFO] Parse json!\n";
-	/*
 	if (Song_Data["bpm"].is_null())
 	{
 		chartData.song.bpm = 100;
 	}
 	else
 	{
-		chartData.song.bpm = Song_Data["bpm"];
+		std::string bpm_str = Song_Data["bpm"];
+		chartData.song.bpm = std::stoi(bpm_str);
 	}
-	*/
-	chartData.song.bpm = Song_Data["bpm"];
-	std::cout << "[INFO] Got chart bpm\n";
+	std::cout << "[INFO] Chart BPM is " << chartData.song.bpm << "\n";
 	auto& notes = Song_Data["notes"];
 	std::cout << "[INFO] Got chart notes\n";
 	int i = 0;
