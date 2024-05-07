@@ -18,6 +18,7 @@ Main handler of the game!!!
 #include <future>
 #include <stdio.h>	
 #include <time.h>
+#include <sol/sol.hpp>
 #include "imgui.h"
 #include "imgui-SFML.h"
 #include "Enums.h"
@@ -149,11 +150,54 @@ const std::string currentDateTime() {
 		// Error handling if localtime_s fails
 		return "[ERROR] Failed to get local time";
 	}
-	if (strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct) == 0) {
+	if (strftime(buf, sizeof(buf), "%Y-%m-%d-%H-%M-%S", &tstruct) == 0) {
 		// Error handling if strftime fails
 		return "[ERROR] Failed to format time";
 	}
 	return buf;
+}
+
+void TestLua()
+{
+	std::cout << "[INFO] Testing lua...\n";
+	sol::state lua;
+	lua.open_libraries(sol::lib::base, sol::lib::package);
+	lua.script("print('[INFO] From Lua script and this works!')");
+}
+
+std::vector<std::variant<std::string, int, bool>> ConvertArgs(const std::vector<std::string>& args)
+{
+	std::vector<std::variant<std::string, int, bool>> convertedArgs;
+	for (const auto& arg : args)
+	{
+		convertedArgs.emplace_back(arg);
+	}
+	return convertedArgs;
+}
+
+void RunLuaFile(std::string path, bool should_args, std::vector<std::string>& args)
+{
+	//what the heck
+	std::cout << "[INFO] Running lua script with path " << path << "\n";
+	sol::state lua;
+	lua.open_libraries(sol::lib::base, sol::lib::package);
+	lua.require_file("api", BasePath + "/api/api.lua");
+	lua.require_file("table_plus", BasePath + "/api/table_plus.lua");
+	sol::load_result script = lua.load_file(path);
+	sol::table luaArgs = lua.create_table();
+	for (size_t i = 0; i < args.size(); ++i)
+	{
+		luaArgs.add(args[i]); //tf!
+	}
+
+	if (should_args)
+	{
+		script(luaArgs);
+	}
+	else
+	{
+		script();
+	}
 }
 
 /*
@@ -206,8 +250,30 @@ std::string GetBashPath()
 	return "";
 }
 
+void HideConsole()
+{
+#if defined(WIN32) || defined(_WIN32)
+	::ShowWindow(::GetConsoleWindow(), SW_HIDE);
+#endif
+}
+
+void ShowConsole()
+{
+#if defined(WIN32) || defined(_WIN32)
+	::ShowWindow(::GetConsoleWindow(), SW_SHOW);
+#endif
+}
+
+bool IsConsoleVisible()
+{
+#if defined(WIN32) || defined(_WIN32)
+	return ::IsWindowVisible(::GetConsoleWindow()) != FALSE;
+#endif
+}
+
 bool IsFirstLaunch()
 {
+#if defined(WIN32) || defined(_WIN32)
 	HKEY hKey;
 	LPCWSTR keyPath = L"SOFTWARE\\SomeRandomGuyzGames\\ProjectRhythm";
 	LPCWSTR valueName = L"FirstTimeLaunch";
@@ -226,10 +292,12 @@ bool IsFirstLaunch()
 	}
 	RegCloseKey(hKey);
 	return false;
+#endif
 }
 
 void Register(std::string key, std::string name, std::string handler)
 {
+#if defined(WIN32) || defined(_WIN32)
 	std::string handlerArgs = "\"" + handler + "\" %1";
 
 	HKEY uriKey, uriIconKey, uriCommandKey;
@@ -255,10 +323,12 @@ void Register(std::string key, std::string name, std::string handler)
 	RegCloseKey(uriKey);
 	RegCloseKey(uriIconKey);
 	RegCloseKey(uriCommandKey);
+#endif
 }
 
 void AddFirstTimeLaunchKey()
 {
+#if defined(WIN32) || defined(_WIN32)
 	HKEY hKey;
 	LPCWSTR keyPath = L"SOFTWARE\\SomeRandomGuyzGames\\ProjectRhythm";
 	LPCWSTR valueName = L"FirstTimeLaunch";
@@ -269,6 +339,7 @@ void AddFirstTimeLaunchKey()
 		RegCloseKey(hKey);
 	}
 	Register("project-rhythm-test", "Project-Rhythm", BasePath + "/Project_Rhythm.exe");
+#endif
 }
 
 void LoadBaseTextures()

@@ -4,11 +4,50 @@ std::map<std::string, sf::Sprite> Notes;
 
 int main(int argc, char* argv[])
 {
-	std::ofstream file("game_log.log");
+	bool isSlient = false;
+	if (argc > 1)
+	{
+		for (int i = 1; i < argc; ++i) {
+			std::string arg = argv[i];
+			if (arg == "--slient")
+			{
+				isSlient = true;
+			}
+		}
+	}
+	if (isSlient && IsWindows)
+	{
+#if defined(WIN32) || defined(_WIN32)
+		ShowWindow(GetConsoleWindow(), SW_HIDE);
+#endif
+	}
+	std::string CurrentDate = currentDateTime();
+	std::cout << "[INFO] Current date is " << CurrentDate << "\n";
+	if (std::filesystem::exists("logs")) {
+		std::cout << "Folder already exists.\n";
+	}
+	else {
+		// Create the folder
+		if (std::filesystem::create_directory("logs")) {
+			std::cout << "[INFO] Folder created successfully. at \n";
+		}
+		else {
+			std::cerr << "[ERROR] Failed to create folder.\n";
+			return 1;
+		}
+	}
+	TestLua();
+	std::string fileName = CurrentDate + "_game_log.log";
+	std::ofstream file(std::filesystem::path("logs") / fileName);
+	if (!file.is_open()) {
+		std::cerr << "[ERROR] Failed to create file.\n";
+	}
 	TeeBuf teeBuf(std::cout.rdbuf(), file.rdbuf());
 	std::streambuf* coutBuf = std::cout.rdbuf(&teeBuf);
 	std::streambuf* cerrBuf = std::cerr.rdbuf(&teeBuf);
 	BasePath = GetBashPath();
+	std::vector<std::string> arguments = { "arg1", "arg2", "arg3" };
+	RunLuaFile(BasePath + "/scripts/test.lua", true, arguments);
 	std::cout << "[INFO] Basepath is located at: " << BasePath << "\n";
 	Notes_NotActive = {
 		{"Left_NotActive", BasePath + "/assets/_LeftNotActive.png"},
