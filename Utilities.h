@@ -34,8 +34,7 @@ struct SpriteCompare //HOT FIX
 {
 	bool operator() (const sf::Sprite& lhs, const sf::Sprite& rhs) const
 	{
-		// Compare sprite positions
-		return lhs.getPosition().y < rhs.getPosition().y;
+		return &lhs < &rhs;
 	}
 };
 
