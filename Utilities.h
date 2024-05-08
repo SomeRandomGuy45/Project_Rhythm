@@ -34,8 +34,8 @@ struct SpriteCompare //HOT FIX
 {
 	bool operator() (const sf::Sprite& lhs, const sf::Sprite& rhs) const
 	{
-		// Compare sprite addresses
-		return &lhs < &rhs;
+		// Compare sprite positions
+		return lhs.getPosition().y < rhs.getPosition().y;
 	}
 };
 
@@ -45,7 +45,7 @@ std::string HoldPath_Start = "/assets/Hold_Start.png";
 sf::Texture HoldTexture_Start;
 std::string HoldPath_End = "/assets/Hold_End.png";
 sf::Texture HoldTexture_End;
-
+sf::Music gameSound;
 using json = nlohmann::json;
 
 std::string BasePath;
@@ -79,6 +79,7 @@ std::map<std::string, sf::Vector2f> ArrowPosition = {
 sf::Texture blank;
 std::map<std::string, sf::Texture> Arrows_Textures;
 std::map<std::string, sf::Sprite> Arrows;
+std::map<sf::Sprite, bool, SpriteCompare> IsGettingHold;
 std::map<std::string, std::string> Flags;
 std::map<std::string, int> Keybinds = {
 	{"Left", 0},
@@ -131,6 +132,7 @@ struct Section
 	std::string y;
 	std::string arrow;
 	std::string IsHold;
+	std::string Length;
 };
 
 struct ChartData
@@ -365,18 +367,25 @@ void LoadBaseTextures()
 	std::cout << "[INFO] Loaded texture from path " << HoldPath_End << "\n";
 }
 
-void CreateNote(std::string Arrow, std::string Y, std::string IsHold, sf::RenderWindow& window)
+void CreateNote(std::string Arrow, std::string Y, std::string IsHold, std::string SIZE ,sf::RenderWindow& window)
 {
 	bool isHold = solve(IsHold);
 	float y = std::stof(Y);
+	float size = std::stof(SIZE);
 	if (Arrow != "")
 	{
 		if (isHold)
 		{
 			if (Arrow == "left")
 			{
+				float NEWSIZE_Y = 64 * size;
+				std::cout << NEWSIZE_Y << "\n";
+				sf::Vector2f targetSize(64, NEWSIZE_Y);
 				sf::Sprite note(HoldTexture);
 				note.setPosition(750, y);
+				note.setScale(
+					targetSize.x / note.getLocalBounds().width,
+					targetSize.y / note.getLocalBounds().height);
 				HoldNotes[note] = note;
 				window.draw(note);
 				window.display();
@@ -535,8 +544,21 @@ void RunChart(ChartData chartData, sf::RenderWindow& window)
 		std::string arrow_ig = chartData.song.notes[i].arrow;
 		std::string arrow_y = chartData.song.notes[i].y;
 		std::string arrow_hold = chartData.song.notes[i].IsHold;
-		CreateNote(arrow_ig, arrow_y, arrow_hold, window);
+		std::string length = chartData.song.notes[i].Length;
+		CreateNote(arrow_ig, arrow_y, arrow_hold, length,window);
 	}
+}
+
+void LoadSong(std::string Path)
+{
+	std::string Song_Path = BasePath + Path;
+	if (!gameSound.openFromFile(Song_Path))
+	{
+		std::cerr << "[ERROR] Unable to load song with play " << Song_Path << "\n";
+		return;
+	}
+	std::cout << "[INFO] Loaded song with path " << Song_Path << "\n";
+	gameSound.play();
 }
 
 void LoadChart(std::string Path, sf::RenderWindow& window) //initchart!
@@ -562,6 +584,7 @@ void LoadChart(std::string Path, sf::RenderWindow& window) //initchart!
 		std::string bpm_str = Song_Data["bpm"];
 		chartData.song.bpm = std::stoi(bpm_str);
 	}
+	LoadSong(Song_Data["song_path"]);
 	std::cout << "[INFO] Chart BPM is " << chartData.song.bpm << "\n";
 	auto& notes = Song_Data["notes"];
 	std::cout << "[INFO] Got chart notes\n";
@@ -572,6 +595,7 @@ void LoadChart(std::string Path, sf::RenderWindow& window) //initchart!
 		section.y = note.value("y", "0"); // Set default Y value to "0" if not present
 		section.arrow = note.value("arrow", "left"); // Set default arrow value to "left" if not present
 		section.IsHold = note.value("isHold", "false"); // Set default isHold value to "false" if not present
+		section.Length = note.value("length", "2");
 		chartData.song.notes.push_back(section);
 		++i;
 	}

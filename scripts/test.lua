@@ -1,3 +1,1 @@
-local table_plus = require("table_plus")
-local a = ...
-print(table_plus.length(a))
+print("Hello world from test 1!")

@@ -46,8 +46,16 @@ int main(int argc, char* argv[])
 	std::streambuf* coutBuf = std::cout.rdbuf(&teeBuf);
 	std::streambuf* cerrBuf = std::cerr.rdbuf(&teeBuf);
 	BasePath = GetBashPath();
-	std::vector<std::string> arguments = { "arg1", "arg2", "arg3" };
-	RunLuaFile(BasePath + "/scripts/test.lua", true, arguments);
+	for (const auto& item : std::filesystem::directory_iterator(BasePath + "/scripts"))
+	{
+		if (std::filesystem::is_regular_file(item.path())) {
+			std::string extension = item.path().extension().string();
+			if (extension == ".lua") {
+				std::vector<std::string> arguments = {};
+				RunLuaFile(item.path().string(), false, arguments);
+			}
+		}
+	}
 	std::cout << "[INFO] Basepath is located at: " << BasePath << "\n";
 	Notes_NotActive = {
 		{"Left_NotActive", BasePath + "/assets/_LeftNotActive.png"},
@@ -136,7 +144,7 @@ int main(int argc, char* argv[])
 	window.draw(Arrows["Up_NotActive"]);
 	window.draw(Arrows["Right_NotActive"]);
 	//std::cout << BasePath + "/songs/test.json" << "\n";
-	LoadChart("/songs/test.json", window);
+	LoadChart("/songs/test_song/test.json", window);
 	window.display();
 	sf::Clock deltaClock;
 	while (window.isOpen())
@@ -187,8 +195,7 @@ int main(int argc, char* argv[])
 			if (value.getTexture() == &Arrows_Textures["Left_Active"])
 			{
 				if (tick >= 1)
-				{ 
-					tick = 0;
+				{
 					value.setTexture(Arrows_Textures["Left_ActiveBeenHolden"]);
 				}
 				else
@@ -200,7 +207,6 @@ int main(int argc, char* argv[])
 			{
 				if (tick >= 1)
 				{
-					tick = 0;
 					value.setTexture(Arrows_Textures["Down_ActiveBeenHolden"]);
 				}
 				else
@@ -212,7 +218,6 @@ int main(int argc, char* argv[])
 			{
 				if (tick >= 1)
 				{
-					tick = 0;
 					value.setTexture(Arrows_Textures["Up_ActiveBeenHolden"]);
 				}
 				else
@@ -224,7 +229,6 @@ int main(int argc, char* argv[])
 			{
 				if (tick >= 1)
 				{
-					tick = 0;
 					value.setTexture(Arrows_Textures["Right_ActiveBeenHolden"]);
 				}
 				else
@@ -254,6 +258,28 @@ int main(int argc, char* argv[])
 				if (Arrows["Down_NotActive"].getTexture() == note.getTexture())
 				{
 					note.setTexture(blank);
+				}
+			}
+		}
+		for (auto& [key, note] : HoldNotes)
+		{
+			if (note.getGlobalBounds().intersects(Arrows["Left_NotActive"].getGlobalBounds()))
+			{
+				if (Arrows["Left_NotActive"].getTexture() == &Arrows_Textures["Left_Active"] || Arrows["Left_NotActive"].getTexture() == &Arrows_Textures["Left_ActiveBeenHolden"] && note.getTexture() == &HoldTexture)
+				{
+					if (Arrows["Left_NotActive"].getTexture() == &Arrows_Textures["Left_ActiveBeenHolden"])
+					{
+						if (IsGettingHold[key] == true)
+						{
+						}
+					}
+					else
+					{
+						if (IsGettingHold[key] == false)
+						{
+							IsGettingHold[key] = true;
+						}
+					}
 				}
 			}
 		}
