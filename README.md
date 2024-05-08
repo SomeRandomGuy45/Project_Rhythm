@@ -4,7 +4,7 @@
 - [ ] Lua api
 - [x] basic json loader for charting
 - [ ] Linux and macOS support
-
+- [ ] Custom installer
 
 ## Buliding
 To bulid these are the requirements:
