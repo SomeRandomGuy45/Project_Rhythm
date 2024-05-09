@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 	std::string CurrentDate = currentDateTime();
 	std::cout << "[INFO] Current date is " << CurrentDate << "\n";
 	if (std::filesystem::exists("logs")) {
-		std::cout << "Folder already exists.\n";
+		std::cout << "[INFO] Folder already exists.\n";
 	}
 	else {
 		// Create the folder
