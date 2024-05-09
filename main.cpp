@@ -77,15 +77,14 @@ int main(int argc, char* argv[])
 	HoldPath_Start = BasePath + "/assets/Hold_Start.png";
 	HoldPath_End = BasePath + "/assets/Hold_End.png";
 	std::cout << "[INFO] Checking if windows...\n";
-	if (IsWindows)
-	{
+#if defined(_WIN32) || defined(WIN32)
 		std::cout << "[INFO] Is Windows! \n";
 		if (IsFirstLaunch())
 		{
 			std::cout << "[INFO] Players first launch! Adding some keys...\n";
 			AddFirstTimeLaunchKey();
 		}
-	}
+#endif
 	CreateActivity("Playing song: Test song!", "Hopefully they are winning....", "test", "test", "test", "test");
 	int height, width;
 	height = sf::VideoMode::getDesktopMode().height;
@@ -247,14 +246,26 @@ int main(int argc, char* argv[])
 				{
 					note.setTexture(blank);
 				}
+			}
+			else if (note.getGlobalBounds().intersects(Arrows["Right_NotActive"].getGlobalBounds()))
+			{
+				//std::cout <<  << "\n";
 				if (Arrows["Right_NotActive"].getTexture() == note.getTexture())
 				{
 					note.setTexture(blank);
 				}
+			}
+			else if (note.getGlobalBounds().intersects(Arrows["Up_NotActive"].getGlobalBounds()))
+			{
+				//std::cout <<  << "\n";
 				if (Arrows["Up_NotActive"].getTexture() == note.getTexture())
 				{
 					note.setTexture(blank);
 				}
+			}
+			else if (note.getGlobalBounds().intersects(Arrows["Down_NotActive"].getGlobalBounds()))
+			{
+				//std::cout <<  << "\n";
 				if (Arrows["Down_NotActive"].getTexture() == note.getTexture())
 				{
 					note.setTexture(blank);
@@ -263,22 +274,23 @@ int main(int argc, char* argv[])
 		}
 		for (auto& [key, note] : HoldNotes)
 		{
+			//TODO score
 			if (note.getGlobalBounds().intersects(Arrows["Left_NotActive"].getGlobalBounds()))
 			{
-				if (Arrows["Left_NotActive"].getTexture() == &Arrows_Textures["Left_Active"] || Arrows["Left_NotActive"].getTexture() == &Arrows_Textures["Left_ActiveBeenHolden"] && note.getTexture() == &HoldTexture)
+				if (note.getTexture() == &HoldTexture)
 				{
-					if (Arrows["Left_NotActive"].getTexture() == &Arrows_Textures["Left_ActiveBeenHolden"])
+					if (Arrows["Left_NotActive"].getTexture() == &Arrows_Textures["Left_Active"])
 					{
-						if (IsGettingHold[key] == true)
-						{
-						}
+						//std::cout << "Almost Winning\n";
+						note.setTexture(HoldTexture_Start);
 					}
-					else
+				}
+				if (Arrows["Left_NotActive"].getTexture() == &Arrows_Textures["Left_ActiveBeenHolden"])
+				{
+					
+					if (note.getTexture() == &HoldTexture_Start)
 					{
-						if (IsGettingHold[key] == false)
-						{
-							IsGettingHold[key] = true;
-						}
+						
 					}
 				}
 			}

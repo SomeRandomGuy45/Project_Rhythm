@@ -34,7 +34,7 @@ struct SpriteCompare //HOT FIX
 {
 	bool operator() (const sf::Sprite& lhs, const sf::Sprite& rhs) const
 	{
-		return &lhs < &rhs;
+		return &lhs.getPosition().y < &rhs.getPosition().y;
 	}
 };
 
@@ -93,6 +93,7 @@ discord::Core* core{};
 std::map<sf::Sprite, sf::Sprite, SpriteCompare> HoldNotes;
 std::map<sf::Sprite, sf::Sprite, SpriteCompare> TapNotes;
 double tick = 0;
+int BPM = 0;
 bool RPC = true;
 
 class TextButton {
@@ -138,7 +139,6 @@ struct ChartData
 {
 	struct Song
 	{
-		int bpm;
 		std::vector<struct Section> notes;
 	} song;
 };
@@ -339,7 +339,7 @@ void AddFirstTimeLaunchKey()
 		RegSetValueEx(hKey, valueName, 0, REG_DWORD, (BYTE*)&valueData, sizeof(DWORD));
 		RegCloseKey(hKey);
 	}
-	Register("project-rhythm-test", "Project-Rhythm", BasePath + "/Project_Rhythm.exe");
+	//Register("project-rhythm-test2", "Project-Rhythm", BasePath + "/Project_Rhythm.exe");
 #endif
 }
 
@@ -378,10 +378,48 @@ void CreateNote(std::string Arrow, std::string Y, std::string IsHold, std::strin
 			if (Arrow == "left")
 			{
 				float NEWSIZE_Y = 64 * size;
-				std::cout << NEWSIZE_Y << "\n";
 				sf::Vector2f targetSize(64, NEWSIZE_Y);
 				sf::Sprite note(HoldTexture);
 				note.setPosition(750, y);
+				note.setScale(
+					targetSize.x / note.getLocalBounds().width,
+					targetSize.y / note.getLocalBounds().height);
+				HoldNotes[note] = note;
+				window.draw(note);
+				window.display();
+			}
+			else if (Arrow == "down")
+			{
+				float NEWSIZE_Y = 64 * size;
+				sf::Vector2f targetSize(64, NEWSIZE_Y);
+				sf::Sprite note(HoldTexture);
+				note.setPosition(850, y);
+				note.setScale(
+					targetSize.x / note.getLocalBounds().width,
+					targetSize.y / note.getLocalBounds().height);
+				HoldNotes[note] = note;
+				window.draw(note);
+				window.display();
+			}
+			else if (Arrow == "up")
+			{
+				float NEWSIZE_Y = 64 * size;
+				sf::Vector2f targetSize(64, NEWSIZE_Y);
+				sf::Sprite note(HoldTexture);
+				note.setPosition(950, y);
+				note.setScale(
+					targetSize.x / note.getLocalBounds().width,
+					targetSize.y / note.getLocalBounds().height);
+				HoldNotes[note] = note;
+				window.draw(note);
+				window.display();
+			}
+			else if (Arrow == "right")
+			{
+				float NEWSIZE_Y = 64 * size;
+				sf::Vector2f targetSize(64, NEWSIZE_Y);
+				sf::Sprite note(HoldTexture);
+				note.setPosition(1050, y);
 				note.setScale(
 					targetSize.x / note.getLocalBounds().width,
 					targetSize.y / note.getLocalBounds().height);
@@ -400,25 +438,70 @@ void CreateNote(std::string Arrow, std::string Y, std::string IsHold, std::strin
 				window.draw(note);
 				window.display();
 			}
+			else if (Arrow == "down")
+			{
+				sf::Sprite note(Arrows_Textures["Down_Active"]);
+				note.setPosition(850, y);
+				TapNotes[note] = note;
+				window.draw(note);
+				window.display();
+			}
+			else if(Arrow == "up")
+			{
+				sf::Sprite note(Arrows_Textures["Up_Active"]);
+				note.setPosition(950, y);
+				TapNotes[note] = note;
+				window.draw(note);
+				window.display();
+			}
+			else if (Arrow == "right")
+			{
+				sf::Sprite note(Arrows_Textures["Right_Active"]);
+				note.setPosition(1050, y);
+				TapNotes[note] = note;
+				window.draw(note);
+				window.display();
+			}
 		}
 	}
 }
 
 void Note_Update(sf::RenderWindow& window, double deltaTime) //TODO: speed
 {
-	for (auto& [key, note] : HoldNotes)
+	if (BPM == NULL)
 	{
-		float NewY = note.getPosition().y + 0.01f;
-		float x = note.getPosition().x;
-		note.setPosition(x, NewY);
-		window.draw(note);
+		for (auto& [key, note] : HoldNotes)
+		{
+			float NewY = note.getPosition().y + 0.01f;
+			float x = note.getPosition().x;
+			note.setPosition(x, NewY);
+			window.draw(note);
+		}
+		for (auto& [key, note] : TapNotes)
+		{
+			float NewY = note.getPosition().y + 0.01f;
+			float x = note.getPosition().x;
+			note.setPosition(x, NewY);
+			window.draw(note);
+		}
 	}
-	for (auto& [key, note] : TapNotes)
+	else
 	{
-		float NewY = note.getPosition().y + 0.01f;
-		float x = note.getPosition().x;
-		note.setPosition(x, NewY);
-		window.draw(note);
+		double speed = ((deltaTime * BPM) / 45);
+		for (auto& [key, note] : HoldNotes)
+		{
+			float NewY = note.getPosition().y + speed;
+			float x = note.getPosition().x;
+			note.setPosition(x, NewY);
+			window.draw(note);
+		}
+		for (auto& [key, note] : TapNotes)
+		{
+			float NewY = note.getPosition().y + speed;
+			float x = note.getPosition().x;
+			note.setPosition(x, NewY);
+			window.draw(note);
+		}
 	}
 	window.display();
 }
@@ -574,17 +657,17 @@ void LoadChart(std::string Path, sf::RenderWindow& window) //initchart!
 	std::cout << "[INFO] Opened json\n";
 	json Song_Data = json::parse(Song);
 	std::cout << "[INFO] Parse json!\n";
-	if (Song_Data["bpm"].is_null())
+	if (Song_Data["bpm"].is_null()) //what if no bpm
 	{
-		chartData.song.bpm = 100;
+		BPM = 100;
 	}
 	else
 	{
 		std::string bpm_str = Song_Data["bpm"];
-		chartData.song.bpm = std::stoi(bpm_str);
+		BPM = std::stoi(bpm_str);
 	}
 	LoadSong(Song_Data["song_path"]);
-	std::cout << "[INFO] Chart BPM is " << chartData.song.bpm << "\n";
+	std::cout << "[INFO] Chart BPM is " << BPM << "\n";
 	auto& notes = Song_Data["notes"];
 	std::cout << "[INFO] Got chart notes\n";
 	int i = 0;
