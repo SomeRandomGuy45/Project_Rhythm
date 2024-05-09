@@ -520,10 +520,6 @@ void CreateActivity(std::string State, std::string Details, std::string LargeIma
 {
 	if (RPC)
 	{
-		if (SmallImage == "")
-		{
-			SmallImage = LargeImage;
-		}
 		std::cout << "[INFO] Setting up new Activity/RPC with info, State: " << State << ", Details: " << Details << ", Large Image: " << LargeImage << ", Small Image: " << SmallImage << ", Large text: " << LargeText << ", and Small text: " << SmallText << "\n";
 		auto result = discord::Core::Create(1236762772549927045, DiscordCreateFlags_Default, &core);
 		discord::Activity activity{};

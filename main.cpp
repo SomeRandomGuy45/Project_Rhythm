@@ -236,7 +236,7 @@ int main(int argc, char* argv[])
 				}
 			}
 		}
-		Note_Update(window, 1.0f/60.0f);
+		Note_Update(window, 1.0f/120.0f);
 		for (auto& [key, note] : TapNotes)
 		{
 			if (note.getGlobalBounds().intersects(Arrows["Left_NotActive"].getGlobalBounds()))
