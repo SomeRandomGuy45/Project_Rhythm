@@ -5,6 +5,7 @@
 - [x] basic json loader for charting
 - [ ] Linux and macOS support
 - [ ] Custom installer
+- [ ] Menu
 
 ## Buliding
 To bulid these are the requirements:
