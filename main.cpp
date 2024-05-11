@@ -180,12 +180,15 @@ int main(int argc, char* argv[])
 		//ImGui::Button("Look at this pretty button");
 		//ImGui::End();
 		window.clear(sf::Color::White);
-		//ImGui::SFML::Render(window);
 		button.draw(window);
-		window.draw(Arrows["Left_NotActive"]);
-		window.draw(Arrows["Down_NotActive"]);
-		window.draw(Arrows["Up_NotActive"]);
-		window.draw(Arrows["Right_NotActive"]);
+		RenderHelperChart(window);
+		if (PlayerState == PLAYING)
+		{
+			window.draw(Arrows["Left_NotActive"]);
+			window.draw(Arrows["Down_NotActive"]);
+			window.draw(Arrows["Up_NotActive"]);
+			window.draw(Arrows["Right_NotActive"]);
+		}
 		/*
 			small hack here to fuck the player over if they try to keep holding one of the keybinds lol!
 		*/

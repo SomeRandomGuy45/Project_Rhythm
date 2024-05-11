@@ -127,6 +127,37 @@ private:
 	sf::Vector2f m_position;
 };
 
+class ImageButton {
+public:
+	ImageButton(sf::Texture& texture, sf::Vector2f position, sf::Vector2f size)
+		: m_texture(texture), m_position(position), m_size(size) {
+		m_sprite.setTexture(m_texture);
+		m_sprite.setPosition(m_position);
+		m_sprite.setScale(m_size.x / m_texture.getSize().x, m_size.y / m_texture.getSize().y);
+	}
+
+	void draw(sf::RenderWindow& window) {
+		window.draw(m_sprite);
+	}
+
+	bool isMouseOver(sf::RenderWindow& window) {
+		sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
+		sf::Vector2f mousePositionView = window.mapPixelToCoords(mousePosition);
+
+		return m_sprite.getGlobalBounds().contains(mousePositionView);
+	}
+
+	bool isClicked(sf::RenderWindow& window) {
+		return isMouseOver(window) && sf::Mouse::isButtonPressed(sf::Mouse::Left);
+	}
+
+private:
+	sf::Texture& m_texture;
+	sf::Sprite m_sprite;
+	sf::Vector2f m_position;
+	sf::Vector2f m_size;
+};
+
 struct Section
 {
 	std::string y;
@@ -147,15 +178,15 @@ const std::string currentDateTime() {
 	time_t now = time(0);
 	struct tm tstruct;
 	char buf[80];
-	if (localtime_s(&tstruct, &now) != 0) {
+	if (localtime_s(&tstruct, &now) != 0) { //oh shit we can get the mf time
 		// Error handling if localtime_s fails
 		return "[ERROR] Failed to get local time";
 	}
-	if (strftime(buf, sizeof(buf), "%Y-%m-%d-%H-%M-%S", &tstruct) == 0) {
+	if (strftime(buf, sizeof(buf), "%Y-%m-%d-%H-%M-%S", &tstruct) == 0) { //if the mother fucking format fails
 		// Error handling if strftime fails
 		return "[ERROR] Failed to format time";
 	}
-	return buf;
+	return buf; //oh yeah we win
 }
 
 void TestLua()
@@ -206,10 +237,8 @@ void RunLuaFile(std::string path, bool should_args, std::vector<std::string>& ar
 	fucking hack idk
 */
 class TeeBuf : public std::streambuf {
-
 public:
 	TeeBuf(std::streambuf* buf1, std::streambuf* buf2) : buf1(buf1), buf2(buf2) {}
-
 protected:
 	virtual int overflow(int c) {
 		if (c != EOF) {
@@ -226,7 +255,6 @@ protected:
 		if (buf2) buf2->pubsync();
 		return 0;
 	}
-
 private:
 	std::streambuf* buf1;
 	std::streambuf* buf2;
@@ -294,6 +322,22 @@ bool IsFirstLaunch()
 	RegCloseKey(hKey);
 	return false;
 #endif
+}
+
+void RenderHelperChart(sf::RenderWindow& window)
+{
+	ImGui::Begin("Helper");
+	char textBuffer[1024] = "";
+	ImGui::InputText("Enter Text", textBuffer, sizeof(textBuffer));
+	ImGui::Text("Entered Text: %s", textBuffer);
+	ImGui::BeginChild("Scrolling");
+	for (int i = 0; i < 50; i++)
+	{
+		ImGui::Text("Number %04d", i);
+	}
+	ImGui::EndChild();
+	ImGui::End();
+	ImGui::SFML::Render(window);
 }
 
 void Register(std::string key, std::string name, std::string handler)
@@ -642,7 +686,7 @@ void LoadSong(std::string Path)
 void LoadChart(std::string Path, sf::RenderWindow& window) //initchart!
 {
 	//took to long to fucking write LOL
-	std::cout << BasePath + Path << "\n";
+	//std::cout << BasePath + Path << "\n";
 	ChartData chartData;
 	std::fstream Song(BasePath + Path);
 	if (!Song.is_open())
